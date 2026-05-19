@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แอดมิน | จัดการป็อปอัพ</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #004B87;
+    --blue-dark: #003660;
+    --blue-light: #0063b1;
+    --gold: #F0A500;
+    --gold-light: #ffc62b;
+    --gold-pale: #fff8e7;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --white: #ffffff;
+    --gray-50: #f7f9fc;
+    --gray-100: #f0f4f8;
+    --gray-200: #e0e8f0;
+    --gray-400: #8fa0b0;
+    --gray-700: #445566;
+    --gray-900: #1a2535;
+    --shadow-sm: 0 2px 8px rgba(0,50,100,0.08);
+    --shadow-md: 0 6px 24px rgba(0,50,100,0.12);
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--gray-50); color: var(--gray-900); min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .header-inner { max-width: 900px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; gap: 14px; }
+  .back-btn { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); border: none; color: white; padding: 7px 14px; border-radius: 8px; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 0.85rem; text-decoration: none; transition: background 0.2s; }
+  .back-btn:hover { background: rgba(255,255,255,0.25); }
+  .header-text h1 { font-family:'Noto Serif Thai',serif; font-size:1.2rem; font-weight:700; color:white; }
+  .header-text p  { font-size:0.75rem; color:rgba(255,255,255,0.65); margin-top:1px; }
+  .gold-bar { height: 4px; background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold)); }
+
+  /* ── MAIN ── */
+  main { max-width: 900px; margin: 0 auto; padding: 28px 16px 60px; }
+
+  /* ── STATUS BANNER ── */
+  .status-banner { border-radius: var(--radius); padding: 13px 18px; margin-bottom: 20px; font-size: 0.88rem; font-weight: 600; display: none; align-items: center; gap: 10px; }
+  .status-banner.success { background: var(--green-light); color: var(--green); border: 1.5px solid #86efac; display: flex; }
+  .status-banner.error   { background: var(--red-light);   color: var(--red);   border: 1.5px solid #fca5a5; display: flex; }
+  .status-banner.info    { background: #eff6ff; color: var(--blue); border: 1.5px solid #bfdbfe; display: flex; }
+
+  /* ── CARD ── */
+  .card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1.5px solid var(--gray-200); margin-bottom: 22px; overflow: hidden; }
+  .card-head { background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%); padding: 14px 22px; display: flex; align-items: center; gap: 10px; }
+  .card-head h2 { font-family:'Noto Serif Thai',serif; font-size:0.95rem; font-weight:700; color:white; }
+  .card-head p  { font-size:0.75rem; color:rgba(255,255,255,0.65); margin-top:1px; }
+  .card-body { padding: 22px; }
+
+  /* ── FORM ── */
+  .form-row { margin-bottom: 18px; }
+  .form-row:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--gray-700); margin-bottom: 7px; }
+  label .hint { font-weight: 400; color: var(--gray-400); font-size: 0.78rem; margin-left: 6px; }
+
+  input[type=text], input[type=url], textarea, select {
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid var(--gray-200); border-radius: 10px;
+    font-family: 'Sarabun', sans-serif; font-size: 0.9rem;
+    background: var(--white); color: var(--gray-900);
+    outline: none; transition: border-color 0.2s;
+  }
+  input[type=text]:focus, input[type=url]:focus, textarea:focus, select:focus { border-color: var(--blue); }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+  /* toggle switch */
+  .toggle-row { display: flex; align-items: center; gap: 12px; }
+  .toggle { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--gray-200); border-radius: 26px; transition: .3s; }
+  .toggle-slider::before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .toggle input:checked + .toggle-slider { background: var(--green); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(22px); }
+  .toggle-label { font-size: 0.88rem; font-weight: 600; color: var(--gray-700); }
+  .toggle-label small { font-weight:400; color:var(--gray-400); margin-left:4px; font-size:0.78rem; }
+
+  /* ── IMAGE PREVIEW ── */
+  .img-preview-wrap { margin-top: 10px; display: none; }
+  .img-preview-wrap img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 10px; border: 1.5px solid var(--gray-200); }
+
+  /* ── POPUP PREVIEW ── */
+  .preview-popup {
+    border: 2px dashed var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-md);
+  }
+  .preview-header { background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%); padding: 14px 18px; display: flex; align-items: center; gap: 10px; }
+  .preview-header-icon { font-size: 1.4rem; }
+  .preview-header h3 { font-family:'Noto Serif Thai',serif; font-size:0.95rem; font-weight:700; color:white; }
+  .preview-header p  { font-size:0.72rem; color:rgba(255,255,255,0.7); margin-top:2px; }
+  .preview-gold { height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold)); }
+  .preview-img-wrap { display: none; width: 100%; }
+  .preview-img-wrap img { width: 100%; height: 160px; object-fit: cover; }
+  .preview-body { padding: 18px; }
+  .preview-body p { font-size: 0.88rem; color: var(--gray-700); line-height: 1.65; white-space: pre-wrap; }
+  .preview-footer { padding: 12px 18px; border-top: 1px solid var(--gray-100); display: flex; justify-content: flex-end; }
+  .preview-btn { background: var(--blue); color: white; border: none; padding: 8px 22px; border-radius: 8px; font-family: 'Sarabun',sans-serif; font-size: 0.85rem; font-weight: 600; }
+
+  /* ── ACTIONS ── */
+  .action-bar { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { padding: 11px 28px; border-radius: 10px; border: none; cursor: pointer; font-family:'Sarabun',sans-serif; font-size:0.92rem; font-weight:600; transition: all 0.2s; display:flex; align-items:center; gap:7px; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-light); }
+  .btn-secondary { background: var(--white); color: var(--gray-700); border: 1.5px solid var(--gray-200); }
+  .btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── HOW TO SECTION ── */
+  .how-card { background: var(--gold-pale); border: 1.5px solid var(--gold); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 22px; }
+  .how-card h3 { font-family:'Noto Serif Thai',serif; font-size:0.95rem; font-weight:700; color:#7a5200; margin-bottom: 10px; }
+  .how-card ol { padding-left: 18px; }
+  .how-card li { font-size: 0.85rem; color: #7a5200; margin-bottom: 6px; line-height: 1.55; }
+  .how-card code { background: rgba(0,0,0,0.08); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size:0.85em; }
+
+  /* ── TABLE (existing rows) ── */
+  .mini-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 420px; }
+  thead th { background: var(--gray-100); color: var(--gray-700); font-weight: 700; padding: 9px 12px; text-align: left; border-bottom: 2px solid var(--gray-200); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--gray-100); }
+  tbody tr:hover { background: #eef4fb; }
+  td { padding: 9px 12px; color: var(--gray-700); vertical-align: middle; }
+  .badge-on  { background: var(--green-light); color: var(--green); font-size:0.72rem; font-weight:700; padding: 2px 8px; border-radius: 20px; }
+  .badge-off { background: var(--gray-100); color: var(--gray-400); font-size:0.72rem; font-weight:700; padding: 2px 8px; border-radius: 20px; }
+
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--gray-200); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 640px) {
+    main { padding: 16px 10px 40px; }
+    .action-bar { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="back-btn" href="index.html">← กลับหน้าหลัก</a>
+    <div class="header-text">
+      <h1>⚙️ แอดมิน — จัดการป็อปอัพ</h1>
+      <p>แก้ไขข้อความ รูปภาพ และสถานะการแสดงผล</p>
+    </div>
+  </div>
+</header>
+<div class="gold-bar"></div>
+
+<main>
+
+  <!-- STATUS -->
+  <div class="status-banner" id="statusBanner">
+    <span id="statusIcon">✅</span>
+    <span id="statusMsg"></span>
+  </div>
+
+  <!-- HOW TO -->
+  <div class="how-card">
+    <h3>📋 วิธีเชื่อมต่อ Google Sheets</h3>
+    <ol>
+      <li>เปิด Google Sheets แล้วสร้าง Tab ชื่อ <code>popup</code></li>
+      <li>สร้างหัวคอลัมน์: <code>active</code> | <code>title</code> | <code>subtitle</code> | <code>icon</code> | <code>message</code> | <code>image_url</code></li>
+      <li>ใส่ค่า <code>TRUE</code> ในคอลัมน์ <code>active</code> เพื่อเปิดใช้งาน</li>
+      <li>เพิ่ม Sheet name <code>popup</code> ใน <code>SHEET_MAP</code> ของ GAS แล้ว Deploy ใหม่</li>
+      <li>กดปุ่ม <strong>โหลดข้อมูลจาก Sheet</strong> เพื่อดึงข้อมูลมาแสดง</li>
+    </ol>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h2>✏️ แก้ไขป็อปอัพ</h2>
+        <p>ข้อมูลจะถูกบันทึกลง Google Sheets โดยตรง</p>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="form-row">
+        <label>สถานะ <span class="hint">เปิด/ปิด การแสดงป็อปอัพ</span></label>
+        <div class="toggle-row">
+          <label class="toggle">
+            <input type="checkbox" id="fldActive" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">เปิดใช้งาน <small id="activeLabel">(จะแสดงเมื่อเปิดหน้าเว็บ)</small></span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label>ไอคอน <span class="hint">อีโมจิ เช่น 📢 ⚠️ 🎉</span></label>
+        <input type="text" id="fldIcon" value="📢" maxlength="4" style="width:80px">
+      </div>
+
+      <div class="form-row">
+        <label>หัวเรื่อง (Title)</label>
+        <input type="text" id="fldTitle" placeholder="เช่น ประกาศสำคัญ">
+      </div>
+
+      <div class="form-row">
+        <label>หัวเรื่องย่อย (Subtitle) <span class="hint">ไม่บังคับ</span></label>
+        <input type="text" id="fldSubtitle" value="กลุ่มการตลาดโซน 2" placeholder="เช่น กลุ่มการตลาดโซน 2">
+      </div>
+
+      <div class="form-row">
+        <label>ข้อความ (Message)</label>
+        <textarea id="fldMessage" placeholder="พิมพ์ข้อความประกาศที่นี่...&#10;รองรับหลายบรรทัด"></textarea>
+      </div>
+
+      <div class="form-row">
+        <label>URL รูปภาพ <span class="hint">ไม่บังคับ — ใส่ลิงก์รูปภาพจาก Google Drive หรือ Imgur</span></label>
+        <input type="url" id="fldImageUrl" placeholder="https://...">
+        <div class="img-preview-wrap" id="imgPreviewWrap">
+          <img id="imgPreview" src="" alt="preview">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h2>👁️ ตัวอย่างป็อปอัพ</h2>
+        <p>แสดงผลตามข้อมูลที่กรอก</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="preview-popup">
+        <div class="preview-header">
+          <span class="preview-header-icon" id="prevIcon">📢</span>
+          <div>
+            <h3 id="prevTitle">หัวเรื่อง</h3>
+            <p id="prevSubtitle">กลุ่มการตลาดโซน 2</p>
+          </div>
+        </div>
+        <div class="preview-gold"></div>
+        <div class="preview-img-wrap" id="prevImgWrap">
+          <img id="prevImg" src="" alt="">
+        </div>
+        <div class="preview-body">
+          <p id="prevMsg">ข้อความจะแสดงที่นี่...</p>
+        </div>
+        <div class="preview-footer">
+          <button class="preview-btn">รับทราบ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="action-bar" style="margin-bottom:28px">
+    <button class="btn btn-primary" onclick="saveToSheet()" id="saveBtn">💾 บันทึกลง Google Sheets</button>
+    <button class="btn btn-secondary" onclick="loadFromSheet()" id="loadBtn">🔄 โหลดข้อมูลจาก Sheet</button>
+    <button class="btn btn-secondary" onclick="testPopup()">▶️ ทดสอบป็อปอัพ</button>
+  </div>
+
+  <!-- EXISTING ROWS -->
+  <div class="card" id="existingCard" style="display:none">
+    <div class="card-head">
+      <div>
+        <h2>📄 ข้อมูลใน Sheet (แถวทั้งหมด)</h2>
+        <p>คลิกแถวเพื่อโหลดเข้าฟอร์ม</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="mini-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Active</th>
+              <th>Icon</th>
+              <th>Title</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody id="sheetTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TEST POPUP OVERLAY -->
+<div class="popup-overlay hidden" id="testOverlay" style="
+  position:fixed;inset:0;background:rgba(0,30,60,0.55);
+  backdrop-filter:blur(4px);z-index:9000;
+  display:flex;align-items:center;justify-content:center;padding:16px;">
+</div>
+
+<style>
+.popup-overlay.hidden { display:none!important; }
+.popup-box2 {
+  background:white; border-radius:20px;
+  box-shadow:0 24px 64px rgba(0,40,80,0.25);
+  max-width:420px; width:100%; overflow:hidden;
+}
+.pop2-header { background:linear-gradient(135deg,#004B87,#003660); padding:16px 20px; display:flex; align-items:center; gap:10px; position:relative; }
+.pop2-header h3 { font-family:'Noto Serif Thai',serif; font-size:1rem; font-weight:700; color:white; }
+.pop2-header p  { font-size:0.75rem; color:rgba(255,255,255,0.7); margin-top:2px; }
+.pop2-close { position:absolute; top:12px; right:14px; background:rgba(255,255,255,0.2); border:none; color:white; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:0.9rem; }
+.pop2-gold { height:3px; background:linear-gradient(90deg,#F0A500,#ffc62b,#F0A500); }
+.pop2-imgwrap { display:none; width:100%; }
+.pop2-imgwrap img { width:100%; height:180px; object-fit:cover; }
+.pop2-body { padding:18px 20px; }
+.pop2-body p { font-size:0.9rem; color:#445566; line-height:1.7; white-space:pre-wrap; }
+.pop2-footer { padding:12px 20px 18px; display:flex; justify-content:flex-end; }
+.pop2-btn { background:#004B87; color:white; border:none; padding:9px 24px; border-radius:9px; font-family:'Sarabun',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
+</style>
+
+<script>
+const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyer6-27TCXDcaNY21sUfg3IltOtpMZEXHKmwFH9uA44TFeJB5rn3hkSgxsB9uRdnrQWA/exec';
+const WRITE_URL   = GAS_URL; // ใช้ doPost ถ้าต้องการเขียน — ดูหมายเหตุด้านล่าง
+const POPUP_SHEET = 'popup';
+
+// ── LIVE PREVIEW ──
+function syncPreview() {
+  document.getElementById('prevIcon').textContent    = document.getElementById('fldIcon').value    || '📢';
+  document.getElementById('prevTitle').textContent   = document.getElementById('fldTitle').value   || 'หัวเรื่อง';
+  document.getElementById('prevSubtitle').textContent= document.getElementById('fldSubtitle').value|| '';
+  document.getElementById('prevMsg').textContent     = document.getElementById('fldMessage').value || 'ข้อความจะแสดงที่นี่...';
+
+  const imgUrl = document.getElementById('fldImageUrl').value.trim();
+  if (imgUrl) {
+    document.getElementById('prevImg').src = imgUrl;
+    document.getElementById('prevImgWrap').style.display = 'block';
+    document.getElementById('imgPreview').src = imgUrl;
+    document.getElementById('imgPreviewWrap').style.display = 'block';
+  } else {
+    document.getElementById('prevImgWrap').style.display = 'none';
+    document.getElementById('imgPreviewWrap').style.display = 'none';
+  }
+
+  const isOn = document.getElementById('fldActive').checked;
+  document.getElementById('activeLabel').textContent = isOn ? '(จะแสดงเมื่อเปิดหน้าเว็บ)' : '(ปิดอยู่ — ไม่แสดง)';
+}
+
+['fldIcon','fldTitle','fldSubtitle','fldMessage','fldImageUrl'].forEach(id => {
+  document.getElementById(id).addEventListener('input', syncPreview);
+});
+document.getElementById('fldActive').addEventListener('change', syncPreview);
+
+// ── LOAD FROM SHEET ──
+async function loadFromSheet() {
+  showStatus('info', '⏳ กำลังโหลดข้อมูลจาก Google Sheets...');
+  const btn = document.getElementById('loadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> กำลังโหลด...';
+
+  try {
+    const res  = await fetch(GAS_URL + '?sheet=' + encodeURIComponent(POPUP_SHEET));
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    // แสดงตาราง
+    if (data.rows && data.rows.length > 0) {
+      renderSheetTable(data.rows);
+      // โหลดแถวแรกที่ active = true เข้าฟอร์ม
+      const active = data.rows.find(r => String(r['active']).toUpperCase() === 'TRUE') || data.rows[0];
+      fillForm(active);
+      showStatus('success', '✅ โหลดข้อมูลสำเร็จ — ' + data.rows.length + ' แถว');
+    } else {
+      showStatus('info', 'ℹ️ ไม่พบข้อมูลใน Sheet "popup" — กรุณาสร้างข้อมูลและบันทึก');
+    }
+  } catch(e) {
+    showStatus('error', '❌ โหลดไม่สำเร็จ: ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '🔄 โหลดข้อมูลจาก Sheet';
+}
+
+function fillForm(row) {
+  document.getElementById('fldActive').checked  = String(row['active']).toUpperCase() === 'TRUE';
+  document.getElementById('fldIcon').value      = row['icon']      || '📢';
+  document.getElementById('fldTitle').value     = row['title']     || '';
+  document.getElementById('fldSubtitle').value  = row['subtitle']  || '';
+  document.getElementById('fldMessage').value   = row['message']   || '';
+  document.getElementById('fldImageUrl').value  = row['image_url'] || '';
+  syncPreview();
+}
+
+function renderSheetTable(rows) {
+  const tbody = document.getElementById('sheetTableBody');
+  tbody.innerHTML = '';
+  rows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    const isOn = String(row['active']).toUpperCase() === 'TRUE';
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td><span class="${isOn ? 'badge-on' : 'badge-off'}">${isOn ? 'เปิด' : 'ปิด'}</span></td>
+      <td>${row['icon']||''}</td>
+      <td>${row['title']||'-'}</td>
+      <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(row['message']||'-').substring(0,60)}</td>
+    `;
+    tr.addEventListener('click', () => { fillForm(row); showStatus('info','ℹ️ โหลดแถว ' + (i+1) + ' เข้าฟอร์มแล้ว'); });
+    tbody.appendChild(tr);
+  });
+  document.getElementById('existingCard').style.display = 'block';
+}
+
+// ── SAVE TO SHEET ──
+// หมายเหตุ: การเขียนกลับ Sheets ต้องใช้ doPost ใน GAS
+// ถ้ายังไม่ได้ตั้งค่า doPost ระบบจะแสดงคำแนะนำ
+async function saveToSheet() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> กำลังบันทึก...';
+
+  const payload = {
+    action:    'upsert_popup',
+    sheet:     POPUP_SHEET,
+    active:    document.getElementById('fldActive').checked ? 'TRUE' : 'FALSE',
+    icon:      document.getElementById('fldIcon').value,
+    title:     document.getElementById('fldTitle').value,
+    subtitle:  document.getElementById('fldSubtitle').value,
+    message:   document.getElementById('fldMessage').value,
+    image_url: document.getElementById('fldImageUrl').value,
+  };
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+    showStatus('success', '✅ บันทึกสำเร็จ! ป็อปอัพจะอัปเดตทันที');
+  } catch(e) {
+    // ถ้า GAS ยังไม่รองรับ POST ให้แสดงขั้นตอนการทำด้วยมือ
+    showStatus('error',
+      '⚠️ ยังไม่สามารถเขียนอัตโนมัติได้ — กรุณาเปิด Google Sheets แล้วแก้ไขแถว popup ด้วยตัวเอง หรือเพิ่ม doPost ใน GAS (ดูคำแนะนำในโค้ด)'
+    );
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '💾 บันทึกลง Google Sheets';
+}
+
+// ── TEST POPUP ──
+function testPopup() {
+  const icon     = document.getElementById('fldIcon').value     || '📢';
+  const title    = document.getElementById('fldTitle').value    || 'หัวเรื่อง';
+  const subtitle = document.getElementById('fldSubtitle').value || '';
+  const msg      = document.getElementById('fldMessage').value  || '';
+  const imgUrl   = document.getElementById('fldImageUrl').value.trim();
+
+  const overlay  = document.getElementById('testOverlay');
+  overlay.innerHTML = `
+    <div class="popup-box2">
+      <div class="pop2-header">
+        <span style="font-size:1.4rem">${icon}</span>
+        <div><h3>${title}</h3><p>${subtitle}</p></div>
+        <button class="pop2-close" onclick="document.getElementById('testOverlay').classList.add('hidden')">✕</button>
+      </div>
+      <div class="pop2-gold"></div>
+      ${imgUrl ? `<div class="pop2-imgwrap" style="display:block"><img src="${imgUrl}" alt=""></div>` : ''}
+      <div class="pop2-body"><p>${msg || '(ยังไม่มีข้อความ)'}</p></div>
+      <div class="pop2-footer"><button class="pop2-btn" onclick="document.getElementById('testOverlay').classList.add('hidden')">รับทราบ</button></div>
+    </div>
+  `;
+  overlay.classList.remove('hidden');
+}
+document.getElementById('testOverlay').addEventListener('click', function(e){
+  if(e.target===this) this.classList.add('hidden');
+});
+
+// ── STATUS HELPER ──
+function showStatus(type, msg) {
+  const el = document.getElementById('statusBanner');
+  el.className = 'status-banner ' + type;
+  document.getElementById('statusMsg').textContent = msg;
+  el.style.display = 'flex';
+  if(type==='success') setTimeout(()=>{ el.style.display='none'; }, 5000);
+}
+
+// โหลดข้อมูลทันทีเมื่อเปิดหน้า
+window.addEventListener('load', loadFromSheet);
+syncPreview();
+</script>
+
+</body>
+</html>
